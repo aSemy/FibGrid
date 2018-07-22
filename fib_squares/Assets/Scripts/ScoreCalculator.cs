@@ -51,9 +51,9 @@ public class ScoreCalculator
                     Tiles tilesYDown = new Tiles(quads, loc, 0, -1);
                     Tiles tilesYUp = new Tiles(quads, loc, 0, 1);
                     Tiles[] tilesArray = { 
-                        //tilesXDown, 
-                        //tilesXUp, 
-                        //tilesYDown, 
+                        tilesXDown, 
+                        tilesXUp, 
+                        tilesYDown, 
                         tilesYUp 
                     };
 
@@ -189,19 +189,31 @@ public class ScoreCalculator
 
         public IEnumerator<GameObject> GetEnumerator()
         {
-            Debug.Log("origin:" + origin + ", xDiff:" + xDiff + ", yDiff:" + yDiff);
-            Debug.Log("locx: " + origin.x + ", xlen: " + tiles.GetLength(0));
-            if (GameController.gameWidth != tiles.GetLength(0))
-                Debug.LogError("w: " + GameController.gameWidth + ", l: " + tiles.GetLength(0));
-            //Debug.Log("locy: " + location.y + ", ylen: " + tiles.GetLength(1));
-            for (int x = origin.x; x < tiles.GetLength(0) && x >= 0; x += xDiff)
+            // moving in both the X and Y direction
+            if (xDiff != 0 && yDiff != 0)
             {
-                for (int y = origin.y; y < tiles.GetLength(1) && y >= 0; y += yDiff)
+                int x = origin.x;
+                int y = origin.y;
+                for (; x < tiles.GetLength(0) && x >= 0
+                     && y < tiles.GetLength(1) && y >= 0
+                     ; x += xDiff, y += yDiff)
                 {
-                    Debug.Log("Returning tile x,y:" + x + "," + y + ", tile:" + tiles[x,y].name);
                     yield return tiles[x, y];
                 }
             }
+            // only moving in the X direction
+            else if (xDiff != 0)
+            {
+                for (int x = origin.x; x < tiles.GetLength(0) && x >= 0; x += xDiff)
+                    yield return tiles[x, origin.y];
+            }
+            // only moving in the Y direction
+            else if (yDiff != 0)
+            {
+                for (int y = origin.y; y < tiles.GetLength(1) && y >= 0; y += yDiff)
+                    yield return tiles[origin.x, y];
+            }
+            // not moving in any direction at all...
         }
 
         IEnumerator IEnumerable.GetEnumerator()
