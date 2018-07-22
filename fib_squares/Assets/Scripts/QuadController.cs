@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class QuadController : MonoBehaviour {
 
-    private TextMesh scoreMesh;
+    public TextMesh scoreMesh;
     public long cellValue = 0;
 
     public GameController gameController;
@@ -26,10 +26,7 @@ public class QuadController : MonoBehaviour {
 
     void OnMouseDown()
     {
-        
         gameController.GameUpdate(this);
-
-
     }
 
     public void IncrementScore() {
