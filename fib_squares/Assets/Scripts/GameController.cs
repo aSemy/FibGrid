@@ -5,8 +5,8 @@ using System;
 
 public class GameController : MonoBehaviour {
 
-    public static long gameWidth = 7;
-    public static long gameHeight = 7;
+    public static long gameWidth = 50;
+    public static long gameHeight = 50;
 
     static GameObject[,] quads = new GameObject[gameWidth,gameHeight];
     static Dictionary<GameObject, Vector2Int> mapCoordToQuad = new Dictionary<GameObject, Vector2Int>();

@@ -62,8 +62,8 @@ public class ScoreCalculator
                     {
                         potentialScoringQuads = GetValidSequenceQuads(tiles);
 
-                        if (potentialScoringQuads.Count > 0 && fibNum >= 5)
-                            Debug.Log("potential " + potentialScoringQuads.Count + ", fibNum: " + fibNum + ", loc " + loc);
+                        //if (potentialScoringQuads.Count > 0 && fibNum >= 5)
+                        //    Debug.Log("potential " + potentialScoringQuads.Count + ", fibNum: " + fibNum + ", loc " + loc);
 
                         if (potentialScoringQuads.Count >= minSize)
                         {
@@ -75,7 +75,7 @@ public class ScoreCalculator
                     // we're done with this quad now
                     // remove it
                     // (maybe this improves performance?)
-                    quads[loc.x, loc.y].GetComponent<QuadController>().scoreMesh.color = Color.red;
+                    //quads[loc.x, loc.y].GetComponent<QuadController>().scoreMesh.color = Color.red;
                     quads[loc.x, loc.y] = null;
 
                 }
@@ -247,13 +247,13 @@ public class ScoreCalculator
                 {
                     // it's not a fib, nevermind
                     // break and return what we have
-                    Debug.Log("End of sequence because " + fib + " is not a fib");
+                    //Debug.Log("End of sequence because " + fib + " is not a fib");
                     break;
                 }
             }
             else
             {
-                Debug.Log("End of sequence origin[" + tiles.Origin + "] because quad is null");
+                //Debug.Log("End of sequence origin[" + tiles.Origin + "] because quad is null");
                 // it's not a fib, nevermind
                 // break and return what we have
                 break;
@@ -264,7 +264,7 @@ public class ScoreCalculator
         foreach (long p in potentialSeq)
             s += p.ToString() + ",";
 
-        Debug.Log("Found potentionally scoring quads origin [" + tiles.Origin + "]: " + s);
+        //Debug.Log("Found potentionally scoring quads origin [" + tiles.Origin + "]: " + s);
         return potentialScoringQuads;
     }
 
