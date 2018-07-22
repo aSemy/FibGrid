@@ -192,7 +192,10 @@ public class ScoreCalculator
             // moving in both the X and Y direction
             if (xDiff != 0 && yDiff != 0)
             {
-                for (int x = origin.x, y = origin.y; x < tiles.GetLength(0) && x >= 0
+                for (int x = origin.x, y = origin.y; 
+                     // is X in bounds
+                     x < tiles.GetLength(0) && x >= 0
+                     // is Y in bounds
                      && y < tiles.GetLength(1) && y >= 0
                      ; x += xDiff, y += yDiff)
                 {
