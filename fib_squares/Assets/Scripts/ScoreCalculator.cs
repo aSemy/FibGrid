@@ -27,10 +27,9 @@ public class ScoreCalculator
         // check for fib sequences
 
         // only worth checking out if there are more than 4 distinct potential fibs
-        // e.g. if the board is covered with 1's, then there's not going to be a sequence
+        // e.g. if the board is covered with 1s, then there's not going to be a sequence
         if (mapFibNumsToLocations.Keys.Count >= minSize - 1)
         {
-
             List<long> fibNums = new List<long>(mapFibNumsToLocations.Keys);
             // sort it, so we check the highest fibs first
             fibNums.Sort(new LongDescendingComparer());
@@ -77,7 +76,6 @@ public class ScoreCalculator
                     // (maybe this improves performance?)
                     //quads[loc.x, loc.y].GetComponent<QuadController>().scoreMesh.color = Color.red;
                     quads[loc.x, loc.y] = null;
-
                 }
             }
         }
@@ -87,6 +85,7 @@ public class ScoreCalculator
 
     SortedList<long, HashSet<Vector2Int>> findFibNumbersAndLocations(GameObject[,] quads)
     {
+        // sort from high to low
         SortedList<long, HashSet<Vector2Int>> mapFibNumsToLocations
         = new SortedList<long, HashSet<Vector2Int>>(new LongDescendingComparer());
 
@@ -104,12 +103,12 @@ public class ScoreCalculator
                     {
                         // we've found a Fib number!
 
-                        // store the location so we can investigate 
-                        // to see if it's part of a sequence later
-
+                        // if this is the first Fib num we've found, create an array
                         if (!mapFibNumsToLocations.ContainsKey(qc.cellValue))
                             mapFibNumsToLocations.Add(qc.CellValue, new HashSet<Vector2Int>());
-
+                        
+                        // store the location so we can investigate 
+                        // to see if it's part of a sequence later
                         mapFibNumsToLocations[qc.cellValue].Add(new Vector2Int(x, y));
                     }
                     else
@@ -148,16 +147,14 @@ public class ScoreCalculator
             // we can calculate the next one directly
             long prev = currentSequence[currentSequence.Count - 1];
             long prevprev = currentSequence[currentSequence.Count - 2];
-            if (prevprev - prev == potentialFib)
-                return true;
+            return prevprev - prev == potentialFib;
         }
         else if (currentSequence.Count == 1)
         {
             // only have one fib so far
             // predict it by dividing by phi, and rounding
             long predictedPrev = Convert.ToInt64(Math.Round(currentSequence[0] / FibTools.phi));
-            if (potentialFib == predictedPrev)
-                return true;
+            return potentialFib == predictedPrev;
         }
         else
         {
@@ -165,7 +162,6 @@ public class ScoreCalculator
             // it's already been vetted as a fib
             return true;
         }
-        return false;
     }
 
     /// <summary>
@@ -189,32 +185,15 @@ public class ScoreCalculator
 
         public IEnumerator<GameObject> GetEnumerator()
         {
-            // moving in both the X and Y direction
-            if (xDiff != 0 && yDiff != 0)
+            for (int x = origin.x, y = origin.y;
+                 // is X in bounds?
+                 x < tiles.GetLength(0) && x >= 0
+                 // and is Y in bounds?
+                 && y < tiles.GetLength(1) && y >= 0
+                 ; x += xDiff, y += yDiff)
             {
-                for (int x = origin.x, y = origin.y; 
-                     // is X in bounds
-                     x < tiles.GetLength(0) && x >= 0
-                     // is Y in bounds
-                     && y < tiles.GetLength(1) && y >= 0
-                     ; x += xDiff, y += yDiff)
-                {
-                    yield return tiles[x, y];
-                }
+                yield return tiles[x, y];
             }
-            // only moving in the X direction
-            else if (xDiff != 0)
-            {
-                for (int x = origin.x; x < tiles.GetLength(0) && x >= 0; x += xDiff)
-                    yield return tiles[x, origin.y];
-            }
-            // only moving in the Y direction
-            else if (yDiff != 0)
-            {
-                for (int y = origin.y; y < tiles.GetLength(1) && y >= 0; y += yDiff)
-                    yield return tiles[origin.x, y];
-            }
-            // not moving in any direction at all...
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -227,7 +206,6 @@ public class ScoreCalculator
 
     HashSet<QuadController> GetValidSequenceQuads(Tiles tiles)
     {
-
         List<long> potentialSeq = new List<long>();
         HashSet<QuadController> potentialScoringQuads = new HashSet<QuadController>();
         foreach (GameObject quad in tiles)
@@ -260,11 +238,6 @@ public class ScoreCalculator
             }
         }
 
-        String s = "";
-        foreach (long p in potentialSeq)
-            s += p.ToString() + ",";
-
-        //Debug.Log("Found potentionally scoring quads origin [" + tiles.Origin + "]: " + s);
         return potentialScoringQuads;
     }
 
