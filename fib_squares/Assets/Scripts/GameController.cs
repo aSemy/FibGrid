@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 
 public class GameController : MonoBehaviour {
@@ -11,7 +12,7 @@ public class GameController : MonoBehaviour {
     static GameObject[,] quads = new GameObject[gameWidth,gameHeight];
     static Dictionary<GameObject, Vector2Int> mapCoordToQuad = new Dictionary<GameObject, Vector2Int>();
 
-
+    public Transform canvasTransform;
     public GameObject Quad;
 
     static ScoreCalculator scorer = new ScoreCalculator();

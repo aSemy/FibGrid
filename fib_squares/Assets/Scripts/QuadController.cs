@@ -29,6 +29,10 @@ public class QuadController : MonoBehaviour {
         gameController.GameUpdate(this);
     }
 
+    public void HasBeenClickedAndIlikePonies(){
+        gameController.GameUpdate(this);
+    }
+
     public void IncrementScore() {
 
         cellValue += 1;

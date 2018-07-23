@@ -59,10 +59,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\FibonacciSequenceChecker.cs" />
     <Compile Include="Assets\Scripts\FibTools.cs" />
     <Compile Include="Assets\Scripts\GameController.cs" />
+    <Compile Include="Assets\Scripts\ISequenceChecker.cs" />
+    <Compile Include="Assets\Scripts\LongDescendingComparer.cs" />
     <Compile Include="Assets\Scripts\QuadController.cs" />
     <Compile Include="Assets\Scripts\ScoreCalculator.cs" />
+    <Compile Include="Assets\Scripts\Tiles.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>/Users/adam/git/adam/fib_squares/fib_squares/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
