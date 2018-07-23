@@ -1,6 +1,5 @@
-﻿using System.Collections;
+﻿
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 
 // calculate scoring tiles
@@ -8,58 +7,74 @@ public class ScoreCalculator
 {
     private long minimumSequenceLength = 5;
 
-    public HashSet<QuadController> FindScoringQuads(GameObject[,] quads)
+    private readonly ISequenceChecker sequenceChecker = new FibonacciSequenceChecker();
+
+    /// <summary>
+    /// Find tiles that are in a valid sequence
+    /// </summary>
+    /// <returns>The scoring tiles.</returns>
+    /// <param name="tileGameObjects">Tile game objects.</param>
+    public HashSet<TileController> FindScoringTiles(GameObject[,] tileGameObjects)
     {
-        quads = (GameObject[,])quads.Clone();
-        foreach (GameObject go in quads)
-            go.GetComponent<QuadController>().scoreMesh.color = Color.white;
+        // create a clone so we don't affect the real tiles
+        tileGameObjects = (GameObject[,])tileGameObjects.Clone();
 
+        foreach (GameObject tileGameObject in tileGameObjects)
+            tileGameObject.GetComponent<TileController>().scoreMesh.color = Color.white;
 
-        HashSet<QuadController> scoringQuads = new HashSet<QuadController>();
+        // we're going to check each tile and if they 'score', then store
+        // them in this set and return them
+        HashSet<TileController> scoringTiles = new HashSet<TileController>();
 
         // find fib numbers
-        SortedList<long, HashSet<Vector2Int>> mapFibNumsToLocations = FindFibNumbersAndLocations(quads);
+        SortedList<long, HashSet<Vector2Int>> mapSequenceNumsToLocations = FindSequenceNumbersAndLocations(tileGameObjects);
 
         // step 2 
         // check for fib sequences
 
         // only worth checking out if there are more than 4 distinct potential fibs
         // e.g. if the board is covered with 1s, then there's not going to be a sequence
-        if (mapFibNumsToLocations.Keys.Count >= minimumSequenceLength - 1)
+        if (mapSequenceNumsToLocations.Keys.Count >= minimumSequenceLength - 1)
         {
-            List<long> fibNums = new List<long>(mapFibNumsToLocations.Keys);
+            List<long> sequenceNumbers = new List<long>(mapSequenceNumsToLocations.Keys);
             // sort it, so we check the highest fibs first
-            fibNums.Sort(new LongDescendingComparer());
+            sequenceNumbers.Sort(new LongDescendingComparer());
 
             // for each found fib number,
             // check for sequences
-            foreach (long fibNum in fibNums)
+            foreach (long sequenceNumber in sequenceNumbers)
             {
                 // for each location of this fib number
                 // check for fib sequences
-                foreach (Vector2Int locationOfSequenceNumber in mapFibNumsToLocations[fibNum])
+                foreach (Vector2Int locationOfSequenceNumber in mapSequenceNumsToLocations[sequenceNumber])
                 {
-                    HashSet<QuadController> scoringQuadsForLocation = GetScoringQuads(quads, locationOfSequenceNumber);
+                    HashSet<TileController> scoringQuadsForLocation = GetScoringQuads(tileGameObjects, locationOfSequenceNumber);
 
                     // add the scoring quads of this location to the total list
-                    scoringQuads.UnionWith(scoringQuadsForLocation);
+                    scoringTiles.UnionWith(scoringQuadsForLocation);
 
                     // we're done with this quad now
                     // remove it
                     // (maybe this improves performance?)
-                    //quads[loc.x, loc.y].GetComponent<QuadController>().scoreMesh.color = Color.red;
-                    quads[locationOfSequenceNumber.x, locationOfSequenceNumber.y] = null;
+                    tileGameObjects[locationOfSequenceNumber.x, locationOfSequenceNumber.y] = null;
                 }
             }
         }
 
-        return scoringQuads;
+        return scoringTiles;
     }
 
-    SortedList<long, HashSet<Vector2Int>> FindFibNumbersAndLocations(GameObject[,] quads)
+    /// <summary>
+    /// Get the locations of all tiles that have a valid sequence number. 
+    /// 
+    /// Map each existing sequence number to a list of locations.
+    /// </summary>
+    /// <returns>The sequence numbers and locations.</returns>
+    /// <param name="tileGameObjects">Tile game objects.</param>
+    SortedList<long, HashSet<Vector2Int>> FindSequenceNumbersAndLocations(GameObject[,] tileGameObjects)
     {
         // sort from high to low
-        SortedList<long, HashSet<Vector2Int>> mapFibNumsToLocations
+        SortedList<long, HashSet<Vector2Int>> mapSequenceNumsToLocations
         = new SortedList<long, HashSet<Vector2Int>>(new LongDescendingComparer());
 
         // step 1
@@ -68,73 +83,50 @@ public class ScoreCalculator
         {
             for (int y = 0; y < GameController.gameHeight; y++)
             {
-                if (quads[x, y] != null)
+                if (tileGameObjects[x, y] != null)
                 {
-                    QuadController qc = quads[x, y].GetComponent<QuadController>();
+                    TileController qc = tileGameObjects[x, y].GetComponent<TileController>();
 
-                    if (FibTools.isFibonacci(qc.cellValue))
+                    if (sequenceChecker.IsNumInSequence(qc.CellValue))
                     {
                         // we've found a Fib number!
 
                         // if this is the first Fib num we've found, create an array
-                        if (!mapFibNumsToLocations.ContainsKey(qc.cellValue))
-                            mapFibNumsToLocations.Add(qc.CellValue, new HashSet<Vector2Int>());
+                        if (!mapSequenceNumsToLocations.ContainsKey(qc.CellValue))
+                            mapSequenceNumsToLocations.Add(qc.CellValue, new HashSet<Vector2Int>());
                         
                         // store the location so we can investigate 
                         // to see if it's part of a sequence later
-                        mapFibNumsToLocations[qc.cellValue].Add(new Vector2Int(x, y));
+                        mapSequenceNumsToLocations[qc.CellValue].Add(new Vector2Int(x, y));
                     }
                     else
                     {
                         // it's not a Fib number, so nullify it
-                        quads[x, y] = null;
+                        tileGameObjects[x, y] = null;
                     }
                 }
             }
         }
-        return mapFibNumsToLocations;
+        return mapSequenceNumsToLocations;
     }
 
     /// <summary>
-    /// Given an existing, descending sequence of Fib numbers, work out if the given number is the n-1 th in the sequence
+    /// Given the location of a tile with a valid sequence number, check each direction for a valid sequence.
     /// 
-    /// Assume that <paramref name="potentialFib"/> has already been vetted as a Fib number!!!
+    /// If there's a valid sequence longer or equal to $minimumSequenceLength then return it.
+    /// 
+    /// Otherwise, return an empty list.
     /// </summary>
-    /// <returns><c>true</c>, if fib NM inus1 was ised, <c>false</c> otherwise.</returns>
-    /// <param name="potentialFib">Potential fib.</param>
-    /// <param name="currentSequence">Current sequence.</param>
-    bool IsFibNMinus1(long potentialFib, List<long> currentSequence)
-    {
-        if (currentSequence.Count >= 2)
-        {
-            // we've got a couple of existing fibs to go from
-            // we can calculate the next one directly
-            long prev = currentSequence[currentSequence.Count - 1];
-            long prevprev = currentSequence[currentSequence.Count - 2];
-            return prevprev - prev == potentialFib;
-        }
-        else if (currentSequence.Count == 1)
-        {
-            // only have one fib so far
-            // predict it by dividing by phi, and rounding
-            long predictedPrev = Convert.ToInt64(Math.Round(currentSequence[0] / FibTools.phi));
-            return potentialFib == predictedPrev;
-        }
-        else
-        {
-            // true by default, 
-            // it's already been vetted as a fib
-            return true;
-        }
-    }
-
-    private HashSet<QuadController> GetScoringQuads(GameObject[,] quads, Vector2Int loc) {
+    /// <returns>The scoring quads.</returns>
+    /// <param name="tileGameObjects">Tile game objects.</param>
+    /// <param name="locationOfSequenceTile">Location of sequence tile.</param>
+    private HashSet<TileController> GetScoringQuads(GameObject[,] tileGameObjects, Vector2Int locationOfSequenceTile) {
         
         // create iterators for up, down, left, right
-        Tiles tilesXDown = new Tiles(quads, loc, -1, 0);
-        Tiles tilesXUp = new Tiles(quads, loc, 1, 0);
-        Tiles tilesYDown = new Tiles(quads, loc, 0, -1);
-        Tiles tilesYUp = new Tiles(quads, loc, 0, 1);
+        Tiles tilesXDown = new Tiles(tileGameObjects, locationOfSequenceTile, -1, 0);
+        Tiles tilesXUp = new Tiles(tileGameObjects, locationOfSequenceTile, 1, 0);
+        Tiles tilesYDown = new Tiles(tileGameObjects, locationOfSequenceTile, 0, -1);
+        Tiles tilesYUp = new Tiles(tileGameObjects, locationOfSequenceTile, 0, 1);
         Tiles[] tilesArray = {
                         tilesXDown,
                         tilesXUp,
@@ -145,7 +137,7 @@ public class ScoreCalculator
         // for each direction, check to see if there's a Fib seq.
         foreach (Tiles tiles in tilesArray)
         {
-            HashSet<QuadController> potentialScoringQuads = GetValidSequenceQuads(tiles);
+            HashSet<TileController> potentialScoringQuads = GetValidSequenceQuads(tiles);
 
             //if (potentialScoringQuads.Count > 0 && fibNum >= 5)
             //    Debug.Log("potential " + potentialScoringQuads.Count + ", fibNum: " + fibNum + ", loc " + loc);
@@ -156,29 +148,29 @@ public class ScoreCalculator
                 return potentialScoringQuads;
             }
         }
-        return new HashSet<QuadController>();
+        return new HashSet<TileController>();
     }
 
-    HashSet<QuadController> GetValidSequenceQuads(Tiles tiles)
+    HashSet<TileController> GetValidSequenceQuads(Tiles tiles)
     {
         List<long> potentialSeq = new List<long>();
-        HashSet<QuadController> potentialScoringQuads = new HashSet<QuadController>();
+        HashSet<TileController> potentialScoringQuads = new HashSet<TileController>();
 
         // get adjacent quads, sequentially
         // (direction specified during Tiles creation)
-        foreach (GameObject quad in tiles)
+        foreach (GameObject tileGameObject in tiles)
         {
-            if (quad != null)
+            if (tileGameObject != null)
             {
-                long cellValue = quad.GetComponent<QuadController>().cellValue;
+                long cellValue = tileGameObject.GetComponent<TileController>().CellValue;
 
                 // is this cell value the n-1th in the sequence?
-                if (IsFibNMinus1(cellValue, potentialSeq)) // TODO replace
+                if (sequenceChecker.IsNumPreviousSequenceTerm(cellValue, potentialSeq))
                 {
                     // We've got another fib for our sequence!
                     // great!
                     potentialSeq.Add(cellValue);
-                    potentialScoringQuads.Add(quad.GetComponent<QuadController>());
+                    potentialScoringQuads.Add(tileGameObject.GetComponent<TileController>());
                 }
                 else
                 {
