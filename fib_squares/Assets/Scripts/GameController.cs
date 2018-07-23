@@ -11,7 +11,7 @@ public class GameController : MonoBehaviour
     public static long gameHeight = 50;
 
     private static GameObject[,] tileGameObjects = new GameObject[gameWidth, gameHeight];
-    private static Dictionary<GameObject, Vector2Int> mapCoordToTileGameObject = new Dictionary<GameObject, Vector2Int>();
+    private static Dictionary<GameObject, Vector2Int> mapTileGameObjectToLocation = new Dictionary<GameObject, Vector2Int>();
 
     // parent that holds all tiles
     public RectTransform canvasTransform;
@@ -64,7 +64,7 @@ public class GameController : MonoBehaviour
 
                 // store this created tile
                 tileGameObjects[x, y] = newTile.gameObject;
-                mapCoordToTileGameObject[newTile.gameObject] = new Vector2Int(x, y);
+                mapTileGameObjectToLocation[newTile.gameObject] = new Vector2Int(x, y);
             }
         }
 
@@ -109,27 +109,27 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void UpdateScores(TileController clickedQuad)
+    void UpdateScores(TileController clickedTile)
     {
 
-        Vector2Int clickedQuadPos = mapCoordToTileGameObject[clickedQuad.gameObject];
+        Vector2Int clickedTileLocation = mapTileGameObjectToLocation[clickedTile.gameObject];
 
         // collect all the quads that need to be incremented
-        HashSet<GameObject> quadsToIncrement = new HashSet<GameObject>();
+        HashSet<GameObject> tilesToClick = new HashSet<GameObject>();
 
         // x axis
         for (int x = 0; x < gameWidth; x++)
         {
-            quadsToIncrement.Add(tileGameObjects[x, clickedQuadPos.y]);
+            tilesToClick.Add(tileGameObjects[x, clickedTileLocation.y]);
         }
         // y axis
         for (int y = 0; y < gameHeight; y++)
         {
-            quadsToIncrement.Add(tileGameObjects[clickedQuadPos.x, y]);
+            tilesToClick.Add(tileGameObjects[clickedTileLocation.x, y]);
         }
 
         // for each, increment the score
-        foreach (GameObject q in quadsToIncrement)
+        foreach (GameObject q in tilesToClick)
         {
             q.GetComponent<TileController>().IncrementScore();
         }

@@ -59,12 +59,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\CanvasController.cs" />
     <Compile Include="Assets\Scripts\FibonacciSequenceChecker.cs" />
     <Compile Include="Assets\Scripts\GameController.cs" />
     <Compile Include="Assets\Scripts\ISequenceChecker.cs" />
     <Compile Include="Assets\Scripts\LongDescendingComparer.cs" />
     <Compile Include="Assets\Scripts\ScoreCalculator.cs" />
+    <Compile Include="Assets\Scripts\ScrollRectController.cs" />
     <Compile Include="Assets\Scripts\TileController.cs" />
     <Compile Include="Assets\Scripts\Tiles.cs" />
     <Reference Include="UnityEditor.StandardEvents">

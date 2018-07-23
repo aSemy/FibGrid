@@ -1,12 +1,11 @@
 ﻿<Properties StartupConfiguration="{8CD58D84-01F0-0DEA-AA25-648947A6B6FE}|">
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/CameraController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ScrollRectController.cs">
     <Files>
-      <File FileName="Assets/Scripts/GameController.cs" Line="118" Column="41" />
       <File FileName="Assets/Scripts/TileController.cs" Line="73" Column="45" />
       <File FileName="Assets/Scripts/ScoreCalculator.cs" Line="23" Column="58" />
       <File FileName="Assets/Scripts/FibonacciSequenceChecker.cs" Line="6" Column="28" />
-      <File FileName="Assets/Scripts/CameraController.cs" Line="14" Column="3" />
+      <File FileName="Assets/Scripts/ScrollRectController.cs" Line="3" Column="34" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
