@@ -19,9 +19,6 @@ public class ScoreCalculator
         // create a clone so we don't affect the real tiles
         tileGameObjects = (GameObject[,])tileGameObjects.Clone();
 
-        foreach (GameObject tileGameObject in tileGameObjects)
-            tileGameObject.GetComponent<TileController>().scoreMesh.color = Color.white;
-
         // we're going to check each tile and if they 'score', then store
         // them in this set and return them
         HashSet<TileController> scoringTiles = new HashSet<TileController>();
