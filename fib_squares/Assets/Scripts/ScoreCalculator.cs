@@ -14,10 +14,10 @@ public class ScoreCalculator
     /// </summary>
     /// <returns>The scoring tiles.</returns>
     /// <param name="tileGameObjects">Tile game objects.</param>
-    public HashSet<TileController> FindScoringTiles(GameObject[,] tileGameObjects)
+    public HashSet<TileController> FindScoringTiles(TileController[,] tileGameObjects)
     {
         // create a clone so we don't affect the real tiles
-        tileGameObjects = (GameObject[,])tileGameObjects.Clone();
+        tileGameObjects = (TileController[,])tileGameObjects.Clone();
 
         // we're going to check each tile and if they 'score', then store
         // them in this set and return them
@@ -68,7 +68,7 @@ public class ScoreCalculator
     /// </summary>
     /// <returns>The sequence numbers and locations.</returns>
     /// <param name="tileGameObjects">Tile game objects.</param>
-    SortedList<long, HashSet<Vector2Int>> FindSequenceNumbersAndLocations(GameObject[,] tileGameObjects)
+    SortedList<long, HashSet<Vector2Int>> FindSequenceNumbersAndLocations(TileController[,] tileGameObjects)
     {
         // sort from high to low
         SortedList<long, HashSet<Vector2Int>> mapSequenceNumsToLocations
@@ -82,19 +82,19 @@ public class ScoreCalculator
             {
                 if (tileGameObjects[x, y] != null)
                 {
-                    TileController qc = tileGameObjects[x, y].GetComponent<TileController>();
+                    TileController tileController = tileGameObjects[x, y];
 
-                    if (sequenceChecker.IsNumInSequence(qc.CellValue))
+                    if (sequenceChecker.IsNumInSequence(tileController.CellValue))
                     {
                         // we've found a Fib number!
 
                         // if this is the first Fib num we've found, create an array
-                        if (!mapSequenceNumsToLocations.ContainsKey(qc.CellValue))
-                            mapSequenceNumsToLocations.Add(qc.CellValue, new HashSet<Vector2Int>());
+                        if (!mapSequenceNumsToLocations.ContainsKey(tileController.CellValue))
+                            mapSequenceNumsToLocations.Add(tileController.CellValue, new HashSet<Vector2Int>());
                         
                         // store the location so we can investigate 
                         // to see if it's part of a sequence later
-                        mapSequenceNumsToLocations[qc.CellValue].Add(new Vector2Int(x, y));
+                        mapSequenceNumsToLocations[tileController.CellValue].Add(new Vector2Int(x, y));
                     }
                     else
                     {
@@ -115,16 +115,16 @@ public class ScoreCalculator
     /// Otherwise, return an empty list.
     /// </summary>
     /// <returns>The scoring quads.</returns>
-    /// <param name="tileGameObjects">Tile game objects.</param>
+    /// <param name="tiles">Array of tiles with valid sequence numbers.</param>
     /// <param name="locationOfSequenceTile">Location of sequence tile.</param>
-    private HashSet<TileController> GetScoringQuads(GameObject[,] tileGameObjects, Vector2Int locationOfSequenceTile) {
+    private HashSet<TileController> GetScoringQuads(TileController[,] tiles, Vector2Int locationOfSequenceTile) {
         
         // create iterators for up, down, left, right
-        Tiles tilesXDown = new Tiles(tileGameObjects, locationOfSequenceTile, -1, 0);
-        Tiles tilesXUp = new Tiles(tileGameObjects, locationOfSequenceTile, 1, 0);
-        Tiles tilesYDown = new Tiles(tileGameObjects, locationOfSequenceTile, 0, -1);
-        Tiles tilesYUp = new Tiles(tileGameObjects, locationOfSequenceTile, 0, 1);
-        Tiles[] tilesArray = {
+        TileControllerEnumerator tilesXDown = new TileControllerEnumerator(tiles, locationOfSequenceTile, -1, 0);
+        TileControllerEnumerator tilesXUp = new TileControllerEnumerator(tiles, locationOfSequenceTile, 1, 0);
+        TileControllerEnumerator tilesYDown = new TileControllerEnumerator(tiles, locationOfSequenceTile, 0, -1);
+        TileControllerEnumerator tilesYUp = new TileControllerEnumerator(tiles, locationOfSequenceTile, 0, 1);
+        TileControllerEnumerator[] tilesEnumerators = {
                         tilesXDown,
                         tilesXUp,
                         tilesYDown,
@@ -132,9 +132,9 @@ public class ScoreCalculator
                     };
 
         // for each direction, check to see if there's a Fib seq.
-        foreach (Tiles tiles in tilesArray)
+        foreach (TileControllerEnumerator tilesEnumerator in tilesEnumerators)
         {
-            HashSet<TileController> potentialScoringQuads = GetValidSequenceQuads(tiles);
+            HashSet<TileController> potentialScoringQuads = GetValidSequenceQuads(tilesEnumerator);
 
             //if (potentialScoringQuads.Count > 0 && fibNum >= 5)
             //    Debug.Log("potential " + potentialScoringQuads.Count + ", fibNum: " + fibNum + ", loc " + loc);
@@ -148,18 +148,18 @@ public class ScoreCalculator
         return new HashSet<TileController>();
     }
 
-    HashSet<TileController> GetValidSequenceQuads(Tiles tiles)
+    HashSet<TileController> GetValidSequenceQuads(TileControllerEnumerator tiles)
     {
         List<long> potentialSeq = new List<long>();
-        HashSet<TileController> potentialScoringQuads = new HashSet<TileController>();
+        HashSet<TileController> potentialScoringQuads = new HashSet<TileController>(new TileController.TileControllerComparer());
 
         // get adjacent quads, sequentially
         // (direction specified during Tiles creation)
-        foreach (GameObject tileGameObject in tiles)
+        foreach (TileController tile in tiles)
         {
-            if (tileGameObject != null)
+            if (tile != null)
             {
-                long cellValue = tileGameObject.GetComponent<TileController>().CellValue;
+                long cellValue = tile.CellValue;
 
                 // is this cell value the n-1th in the sequence?
                 if (sequenceChecker.IsNumPreviousSequenceTerm(cellValue, potentialSeq))
@@ -167,7 +167,7 @@ public class ScoreCalculator
                     // We've got another fib for our sequence!
                     // great!
                     potentialSeq.Add(cellValue);
-                    potentialScoringQuads.Add(tileGameObject.GetComponent<TileController>());
+                    potentialScoringQuads.Add(tile);
                 }
                 else
                 {

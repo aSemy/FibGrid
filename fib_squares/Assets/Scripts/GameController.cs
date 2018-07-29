@@ -10,8 +10,8 @@ public class GameController : MonoBehaviour
     public static long gameWidth = 50;
     public static long gameHeight = 50;
 
-    private static GameObject[,] tileGameObjects = new GameObject[gameWidth, gameHeight];
-    private static Dictionary<GameObject, Vector2Int> mapTileGameObjectToLocation = new Dictionary<GameObject, Vector2Int>();
+    private static TileController[,] tileControllers = new TileController[gameWidth, gameHeight];
+    //private static SortedList<TileController, Vector2Int> mapTileGameObjectToLocation = new SortedList<TileController, Vector2Int>();
 
     // parent that holds all tiles
     public RectTransform canvasTransform;
@@ -41,6 +41,8 @@ public class GameController : MonoBehaviour
 
     private void CreateGrid()
     {
+        tileControllers = new TileController[gameWidth, gameHeight];
+
         for (int x = 0; x < gameWidth; x++)
         {
             for (int y = 0; y < gameHeight; y++)
@@ -63,15 +65,18 @@ public class GameController : MonoBehaviour
                 newTile.rectTransform.anchoredPosition = pos;
 
                 // store this created tile
-                tileGameObjects[x, y] = newTile.gameObject;
-                mapTileGameObjectToLocation[newTile.gameObject] = new Vector2Int(x, y);
+                TileController tc = newTile.gameObject.GetComponent<TileController>();
+                tc.X = x;
+                tc.Y = y;
+                tileControllers[x, y] = tc;
+                //mapTileGameObjectToLocation[tc] = new Vector2Int(x, y);
             }
         }
 
         // make sure the holder is big enough
         // get the first (bottom left) and last (top right) elements
-        Image first = tileGameObjects[0, 0].GetComponent<Image>();
-        Image last = tileGameObjects[tileGameObjects.GetLength(0) - 1, tileGameObjects.GetLength(1) - 1].GetComponent<Image>();
+        Image first = tileControllers[0, 0].GetComponent<Image>();
+        Image last = tileControllers[tileControllers.GetLength(0) - 1, tileControllers.GetLength(1) - 1].GetComponent<Image>();
         // the difference is going to be the width and height of the holder
         // times a bit of spacing
         Vector2 diff = last.rectTransform.anchoredPosition - first.rectTransform.anchoredPosition
@@ -88,7 +93,7 @@ public class GameController : MonoBehaviour
         UpdateScores(clickedQuad);
 
         // check for 5 consecutive fibs
-        HashSet<TileController> scorers = scorer.FindScoringTiles(tileGameObjects);
+        HashSet<TileController> scorers = scorer.FindScoringTiles(tileControllers);
 
         long turnScore = 0;
         foreach (TileController qc in scorers)
@@ -104,34 +109,32 @@ public class GameController : MonoBehaviour
     }
 
     public void GameReset() {
-        foreach (GameObject tileGameObject in tileGameObjects){
-            tileGameObject.GetComponent<TileController>().ResetScore();
-        }
+        foreach (TileController tile in tileControllers)
+            tile.ResetScore();
     }
 
     void UpdateScores(TileController clickedTile)
     {
-
-        Vector2Int clickedTileLocation = mapTileGameObjectToLocation[clickedTile.gameObject];
+        //Vector2Int clickedTileLocation = mapTileGameObjectToLocation[clickedTile];
 
         // collect all the quads that need to be incremented
-        HashSet<GameObject> tilesToClick = new HashSet<GameObject>();
+        HashSet<TileController> tilesToClick = new HashSet<TileController>();
 
         // x axis
         for (int x = 0; x < gameWidth; x++)
         {
-            tilesToClick.Add(tileGameObjects[x, clickedTileLocation.y]);
+            tilesToClick.Add(tileControllers[x, clickedTile.Y]);
         }
         // y axis
         for (int y = 0; y < gameHeight; y++)
         {
-            tilesToClick.Add(tileGameObjects[clickedTileLocation.x, y]);
+            tilesToClick.Add(tileControllers[clickedTile.X, y]);
         }
 
         // for each, increment the score
-        foreach (GameObject q in tilesToClick)
+        foreach (TileController tile in tilesToClick)
         {
-            q.GetComponent<TileController>().IncrementScore();
+            tile.IncrementScore();
         }
     }
 }

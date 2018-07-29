@@ -6,14 +6,14 @@ using System.Collections;
 /// Create an iterator that moves over a grid of tiles in a direction
 /// starting at an origin
 /// </summary>
-public class Tiles : IEnumerable<GameObject>
+public class TileControllerEnumerator : IEnumerable<TileController>
 {
-    GameObject[,] tiles;
+    private readonly TileController[,] tiles;
     private readonly Vector2Int origin;
     private readonly int xDiff;
     private readonly int yDiff;
 
-    public Tiles(GameObject[,] tiles, Vector2Int origin, int xDiff, int yDiff)
+    public TileControllerEnumerator(TileController[,] tiles, Vector2Int origin, int xDiff, int yDiff)
     {
         this.tiles = tiles;
         this.origin = origin;
@@ -21,7 +21,7 @@ public class Tiles : IEnumerable<GameObject>
         this.yDiff = yDiff;
     }
 
-    public IEnumerator<GameObject> GetEnumerator()
+    public IEnumerator<TileController> GetEnumerator()
     {
         for (int x = origin.x, y = origin.y;
              // is X in bounds?
