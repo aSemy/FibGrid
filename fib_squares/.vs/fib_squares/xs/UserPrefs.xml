@@ -1,6 +1,6 @@
 ﻿<Properties StartupConfiguration="{8CD58D84-01F0-0DEA-AA25-648947A6B6FE}|">
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/FibonacciSequenceChecker.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/TileController.cs">
     <Files>
       <File FileName="Assets/Scripts/ScoreCalculator.cs" Line="165" Column="53" />
       <File FileName="Assets/Scripts/TileControllerEnumerator.cs" Line="32" Column="10" />

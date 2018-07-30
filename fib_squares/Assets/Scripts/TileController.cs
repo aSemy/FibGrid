@@ -10,7 +10,9 @@ public class TileController : MonoBehaviour
     public long X { get; set; }
     public long Y { get; set; }
 
+
     Color defaultColour;
+    Color scoreMeshDefaultColour;
 
     //public GameController gameController;
 
@@ -22,7 +24,9 @@ public class TileController : MonoBehaviour
         scoreMesh = textMeshes[0];
         scoreMesh.text = CellValue.ToString();
         defaultColour = GetComponent<Image>().color;
-        scoreMesh.enabled = false;
+        scoreMeshDefaultColour = scoreMesh.color;
+        //scoreMesh.enabled = false;
+        scoreMesh.color = Color.clear;
     }
 
     // Update is called once per frame
@@ -48,18 +52,19 @@ public class TileController : MonoBehaviour
         StartCoroutine(ColourFlasher(GetComponent<Image>(), Color.green));
 
         // display updated score
-        scoreMesh.enabled = true;
+        //scoreMesh.enabled = true;
+        scoreMesh.color = scoreMeshDefaultColour;
         scoreMesh.text = CellValue.ToString();
     }
 
     internal void ResetScore()
     {
-        GetComponent<Image>().color = Color.yellow;
         StartCoroutine(ColourFlasher(GetComponent<Image>(), Color.yellow));
 
         CellValue = 0;
 
-        scoreMesh.enabled = false;
+        //scoreMesh.enabled = false;
+        scoreMesh.color = Color.clear;
         scoreMesh.text = CellValue.ToString();
     }
 
@@ -73,16 +78,18 @@ public class TileController : MonoBehaviour
     public override bool Equals(object other)
     {
         var controller = other as TileController;
-        return controller != null &&
-               base.Equals(other) &&
-               CellValue == controller.CellValue;
+        return controller != null 
+                    && CellValue == controller.CellValue 
+                    && X == controller.X
+                    && Y == controller.Y;
     }
 
     public override int GetHashCode()
     {
         var hashCode = -60141616;
-        hashCode = hashCode * -1521134295 + base.GetHashCode();
         hashCode = hashCode * -1521134295 + CellValue.GetHashCode();
+        hashCode = hashCode * -1521134295 + X.GetHashCode();
+        hashCode = hashCode * -1521134295 + Y.GetHashCode();
         return hashCode;
     }
 
@@ -90,7 +97,13 @@ public class TileController : MonoBehaviour
     {
         public bool Equals(TileController x, TileController y)
         {
-            return x != null && y != null && x.CellValue == y.CellValue && object.Equals(x, y);
+            return 
+                // not null
+                x != null && y != null 
+                // cell value same
+                && x.CellValue == y.CellValue 
+                // same location
+                && x.X == y.X && x.Y == y.Y;
         }
 
         public int GetHashCode(TileController obj)
